@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>年糕 GESP 五级复习系统</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">GESP C++ 五级</p>
+        <h1>年糕复习答题系统</h1>
+      </div>
+      <div class="stats" aria-label="学习进度">
+        <span id="statQuestions">0 道选择题</span>
+        <span id="statPrograms">0 组编程题</span>
+        <span id="statMastery">0 个知识点</span>
+      </div>
+    </header>
+
+    <main>
+      <nav class="tabs" aria-label="主功能">
+        <button class="tab active" data-view="review">先复习</button>
+        <button class="tab" data-view="quiz">再答题</button>
+        <button class="tab" data-view="programming">编程题</button>
+        <button class="tab" data-view="bank">题库</button>
+      </nav>
+
+      <section id="review" class="view active">
+        <div class="section-head">
+          <div>
+            <h2>知识点热身</h2>
+            <p>按考试高频点整理。每个点先看懂，再做对应题。</p>
+          </div>
+          <button id="startQuizFromReview" class="primary">开始答题</button>
+        </div>
+        <div id="topicGrid" class="topic-grid"></div>
+      </section>
+
+      <section id="quiz" class="view">
+        <div class="quiz-layout">
+          <aside class="panel">
+            <h2>答题设置</h2>
+            <label>
+              知识点
+              <select id="topicFilter"></select>
+            </label>
+            <label>
+              试卷
+              <select id="examFilter"></select>
+            </label>
+            <label>
+              题量
+              <input id="quizSize" type="number" min="5" max="50" value="15" />
+            </label>
+            <div class="switch-row">
+              <input id="wrongOnly" type="checkbox" />
+              <label for="wrongOnly">只练错题</label>
+            </div>
+            <button id="newQuiz" class="primary full">生成练习</button>
+            <div class="score-card">
+              <span>本轮得分</span>
+              <strong id="scoreText">0 / 0</strong>
+            </div>
+          </aside>
+          <article class="question-panel">
+            <div id="quizEmpty" class="empty">先生成一组练习题。</div>
+            <div id="quizQuestion" hidden>
+              <div class="question-meta">
+                <span id="questionIndex"></span>
+                <span id="questionSource"></span>
+              </div>
+              <h2 id="questionTitle"></h2>
+              <pre id="questionBody"></pre>
+              <div id="optionList" class="options"></div>
+              <div id="feedback" class="feedback" hidden></div>
+              <div class="actions">
+                <button id="prevQuestion">上一题</button>
+                <button id="nextQuestion" class="primary">下一题</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="programming" class="view">
+        <div class="section-head">
+          <div>
+            <h2>编程题：先拆知识点，再动手</h2>
+            <p>每道题都先看“考什么”和“解题步骤”，再读原题。</p>
+          </div>
+          <select id="programTopicFilter"></select>
+        </div>
+        <div id="programList" class="program-list"></div>
+      </section>
+
+      <section id="bank" class="view">
+        <div class="section-head">
+          <div>
+            <h2>选择题题库</h2>
+            <p>来自文件夹内 PDF，答案表已自动关联。</p>
+          </div>
+          <input id="bankSearch" type="search" placeholder="搜索：链表、gcd、筛法..." />
+        </div>
+        <div id="bankList" class="bank-list"></div>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
