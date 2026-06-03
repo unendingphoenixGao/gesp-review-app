@@ -14,8 +14,8 @@
       </div>
       <div class="stats" aria-label="学习进度">
         <span id="statQuestions">0 道选择题</span>
-        <span id="statPrograms">0 组编程题</span>
-        <span id="statMastery">0 个知识点</span>
+        <span id="statPracticed">已练 0 道</span>
+        <span id="statWrong">错题 0 道</span>
       </div>
     </header>
 
@@ -33,7 +33,28 @@
             <h2>知识点热身</h2>
             <p>按考试高频点整理。每个点先看懂，再做对应题。</p>
           </div>
-          <button id="startQuizFromReview" class="primary">开始答题</button>
+          <div class="head-actions">
+            <button id="continueQuiz" class="primary">继续未练题</button>
+            <button id="startQuizFromReview">随机练习</button>
+          </div>
+        </div>
+        <div class="progress-grid" aria-label="总体练习记录">
+          <div class="progress-card">
+            <span>已练习</span>
+            <strong id="progressPracticed">0</strong>
+          </div>
+          <div class="progress-card">
+            <span>未练习</span>
+            <strong id="progressRemaining">0</strong>
+          </div>
+          <div class="progress-card">
+            <span>当前错题</span>
+            <strong id="progressWrong">0</strong>
+          </div>
+          <div class="progress-card">
+            <span>正确率</span>
+            <strong id="progressAccuracy">0%</strong>
+          </div>
         </div>
         <div id="topicGrid" class="topic-grid"></div>
       </section>
@@ -54,14 +75,24 @@
               题量
               <input id="quizSize" type="number" min="5" max="50" value="15" />
             </label>
-            <div class="switch-row">
-              <input id="wrongOnly" type="checkbox" />
-              <label for="wrongOnly">只练错题</label>
-            </div>
+            <label>
+              练习范围
+              <select id="practiceMode">
+                <option value="unpracticed">优先练未做题</option>
+                <option value="wrong">只练当前错题</option>
+                <option value="all">全部题目随机</option>
+                <option value="reviewed">复习已练题</option>
+              </select>
+            </label>
             <button id="newQuiz" class="primary full">生成练习</button>
+            <button id="clearRecords" class="danger subtle full">清空练习记录</button>
             <div class="score-card">
               <span>本轮得分</span>
               <strong id="scoreText">0 / 0</strong>
+            </div>
+            <div class="mini-progress">
+              <p><span>总进度</span><strong id="sideProgress">0 / 0</strong></p>
+              <p><span>当前错题</span><strong id="sideWrong">0</strong></p>
             </div>
           </aside>
           <article class="question-panel">
@@ -102,6 +133,13 @@
             <p>来自文件夹内 PDF，答案表已自动关联。</p>
           </div>
           <input id="bankSearch" type="search" placeholder="搜索：链表、gcd、筛法..." />
+          <select id="bankStatusFilter" aria-label="题目状态筛选">
+            <option value="all">全部状态</option>
+            <option value="unpracticed">未练习</option>
+            <option value="correct">已答对</option>
+            <option value="wrong">当前错题</option>
+            <option value="everWrong">曾经错过</option>
+          </select>
         </div>
         <div id="bankList" class="bank-list"></div>
       </section>

@@ -128,6 +128,20 @@ button:hover,
   color: #fff;
 }
 
+.danger {
+  border-color: #d9b9b6;
+  color: var(--red);
+}
+
+.danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.subtle {
+  background: #fff;
+}
+
 .full {
   width: 100%;
 }
@@ -151,6 +165,39 @@ button:hover,
 .section-head p {
   margin-bottom: 0;
   color: var(--muted);
+}
+
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progress-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.progress-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progress-card strong {
+  color: var(--green-dark);
+  font-size: 28px;
 }
 
 .topic-grid {
@@ -242,6 +289,23 @@ input {
   color: var(--green-dark);
 }
 
+.mini-progress {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.mini-progress p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.mini-progress strong {
+  color: var(--ink);
+}
+
 .question-panel {
   min-height: 520px;
   padding: 22px;
@@ -267,6 +331,21 @@ input {
   padding: 6px 10px;
   color: var(--green-dark);
   font-size: 13px;
+}
+
+.question-meta .status-wrong {
+  background: #fff1ef;
+  color: var(--red);
+}
+
+.question-meta .status-normal {
+  background: #edf4f0;
+  color: var(--green-dark);
+}
+
+.question-meta .status-review {
+  background: #fff6e8;
+  color: var(--amber);
 }
 
 pre {
@@ -385,7 +464,8 @@ pre {
   }
 
   .quiz-layout,
-  .program-card .steps {
+  .program-card .steps,
+  .progress-grid {
     grid-template-columns: 1fr;
   }
 }

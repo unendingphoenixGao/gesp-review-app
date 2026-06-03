@@ -79,7 +79,8 @@ const KNOWLEDGE = {
 
 let quiz = [];
 let current = 0;
-let answers = JSON.parse(localStorage.getItem("gespAnswers") || "{}");
+const STORAGE_KEY = "gespAnswers";
+let answers = loadAnswers();
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -96,8 +97,38 @@ function topicCount(topic) {
   return DATA.questions.filter((q) => q.topics.includes(topic)).length;
 }
 
+function loadAnswers() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
 function saveAnswers() {
-  localStorage.setItem("gespAnswers", JSON.stringify(answers));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+}
+
+function recordFor(questionId) {
+  const record = answers[questionId];
+  if (!record) return null;
+  return {
+    choice: record.choice || record.lastChoice || "",
+    correct: Boolean(record.correct),
+    attempts: Number(record.attempts || 1),
+    everWrong: Boolean(record.everWrong || record.correct === false),
+    lastAt: record.lastAt || "",
+  };
+}
+
+function progressSummary() {
+  const practiced = DATA.questions.filter((q) => recordFor(q.id)).length;
+  const currentWrong = DATA.questions.filter((q) => recordFor(q.id)?.correct === false).length;
+  const everWrong = DATA.questions.filter((q) => recordFor(q.id)?.everWrong).length;
+  const correct = DATA.questions.filter((q) => recordFor(q.id)?.correct === true).length;
+  const remaining = Math.max(0, DATA.questions.length - practiced);
+  const accuracy = practiced ? Math.round((correct / practiced) * 100) : 0;
+  return { practiced, currentWrong, everWrong, correct, remaining, accuracy };
 }
 
 function setView(name) {
@@ -106,9 +137,20 @@ function setView(name) {
 }
 
 function renderStats() {
+  const progress = progressSummary();
   $("#statQuestions").textContent = `${DATA.questions.length} 道选择题`;
-  $("#statPrograms").textContent = `${DATA.programs.length} 组编程题`;
-  $("#statMastery").textContent = `${allTopics().length} 个知识点`;
+  $("#statPracticed").textContent = `已练 ${progress.practiced} 道`;
+  $("#statWrong").textContent = `错题 ${progress.currentWrong} 道`;
+}
+
+function renderProgress() {
+  const progress = progressSummary();
+  $("#progressPracticed").textContent = progress.practiced;
+  $("#progressRemaining").textContent = progress.remaining;
+  $("#progressWrong").textContent = progress.currentWrong;
+  $("#progressAccuracy").textContent = `${progress.accuracy}%`;
+  $("#sideProgress").textContent = `${progress.practiced} / ${DATA.questions.length}`;
+  $("#sideWrong").textContent = progress.currentWrong;
 }
 
 function renderReview() {
@@ -140,12 +182,17 @@ function fillFilters() {
 function filteredQuestions() {
   const topic = $("#topicFilter").value;
   const exam = $("#examFilter").value;
-  const wrongOnly = $("#wrongOnly").checked;
+  const mode = $("#practiceMode").value;
   return DATA.questions.filter((q) => {
+    const record = recordFor(q.id);
     const topicOk = topic === "全部知识点" || q.topics.includes(topic);
     const examOk = exam === "全部试卷" || q.exam === exam;
-    const wrongOk = !wrongOnly || answers[q.id]?.correct === false;
-    return topicOk && examOk && wrongOk;
+    const modeOk =
+      mode === "all" ||
+      (mode === "unpracticed" && !record) ||
+      (mode === "wrong" && record?.correct === false) ||
+      (mode === "reviewed" && Boolean(record));
+    return topicOk && examOk && modeOk;
   });
 }
 
@@ -158,6 +205,12 @@ function makeQuiz() {
   quiz = shuffle(filteredQuestions()).slice(0, size);
   current = 0;
   renderQuestion();
+}
+
+function startMode(mode) {
+  $("#practiceMode").value = mode;
+  setView("quiz");
+  makeQuiz();
 }
 
 function renderQuestion() {
@@ -194,7 +247,7 @@ function renderQuestion() {
         .join("");
 
   $("#feedback").hidden = true;
-  const previous = answers[q.id]?.choice;
+  const previous = recordFor(q.id)?.choice;
   if (previous) showAnswer(previous, false);
 }
 
@@ -214,15 +267,26 @@ function showAnswer(choice, record = true) {
     ? `答对了。答案是 <strong>${q.answer}</strong>。`
     : `这题先记一下：你选了 <strong>${choice}</strong>，正确答案是 <strong>${q.answer}</strong>。`;
   if (record) {
-    answers[q.id] = { choice, correct };
+    const previous = recordFor(q.id);
+    answers[q.id] = {
+      choice,
+      lastChoice: choice,
+      correct,
+      attempts: (previous?.attempts || 0) + 1,
+      everWrong: Boolean(previous?.everWrong || !correct),
+      lastAt: new Date().toISOString(),
+    };
     saveAnswers();
     updateScore();
+    renderStats();
+    renderProgress();
+    renderBank();
   }
 }
 
 function updateScore() {
   const done = quiz.filter((q) => answers[q.id]).length;
-  const right = quiz.filter((q) => answers[q.id]?.correct).length;
+  const right = quiz.filter((q) => recordFor(q.id)?.correct).length;
   $("#scoreText").textContent = `${right} / ${done}`;
 }
 
@@ -260,40 +324,66 @@ function renderProgramming() {
 
 function renderBank() {
   const key = $("#bankSearch").value.trim().toLowerCase();
+  const status = $("#bankStatusFilter").value;
   const list = DATA.questions.filter((q) => {
+    const record = recordFor(q.id);
     const text = `${q.exam} ${q.topics.join(" ")} ${q.question} ${Object.values(q.options || {}).join(" ")}`.toLowerCase();
-    return !key || text.includes(key);
+    const keyOk = !key || text.includes(key);
+    const statusOk =
+      status === "all" ||
+      (status === "unpracticed" && !record) ||
+      (status === "correct" && record?.correct === true) ||
+      (status === "wrong" && record?.correct === false) ||
+      (status === "everWrong" && record?.everWrong);
+    return keyOk && statusOk;
   });
   $("#bankList").innerHTML = list
     .map(
-      (q) => `
+      (q) => {
+        const record = recordFor(q.id);
+        const statusText = !record ? "未练习" : record.correct ? "已答对" : "当前错题";
+        const extra = record?.everWrong && record.correct ? "曾错已订正" : "";
+        return `
         <article class="bank-card">
           <div class="question-meta">
             <span>${q.exam} 第 ${q.number} 题</span>
+            <span class="${record?.correct === false ? "status-wrong" : "status-normal"}">${statusText}</span>
+            ${extra ? `<span class="status-review">${extra}</span>` : ""}
             ${q.topics.map((t) => `<span>${t}</span>`).join("")}
           </div>
           <h3>${escapeHtml(q.question.replace(/^第\s*\d+\s*题\s*/, "").slice(0, 220))}</h3>
-          <p class="answer">答案：${q.answer || "未识别"}</p>
+          <p class="answer">答案：${q.answer || "未识别"}${record ? ` · 已练 ${record.attempts} 次 · 上次选 ${record.choice}` : ""}</p>
         </article>
-      `
+      `;
+      }
     )
-    .join("");
+    .join("") || `<div class="empty">没有符合条件的题目。</div>`;
 }
 
 function bindEvents() {
   $$(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
   $("#startQuizFromReview").addEventListener("click", () => {
-    setView("quiz");
-    makeQuiz();
+    startMode("all");
   });
+  $("#continueQuiz").addEventListener("click", () => startMode("unpracticed"));
   $("#topicGrid").addEventListener("click", (event) => {
     const button = event.target.closest(".practice-topic");
     if (!button) return;
     $("#topicFilter").value = button.dataset.topic;
-    setView("quiz");
-    makeQuiz();
+    startMode("unpracticed");
   });
   $("#newQuiz").addEventListener("click", makeQuiz);
+  $("#clearRecords").addEventListener("click", () => {
+    if (!confirm("确定要清空所有已练题和错题记录吗？清空后不能恢复。")) return;
+    answers = {};
+    saveAnswers();
+    quiz = [];
+    current = 0;
+    renderStats();
+    renderProgress();
+    renderQuestion();
+    renderBank();
+  });
   $("#optionList").addEventListener("click", (event) => {
     const button = event.target.closest(".option");
     if (button) showAnswer(button.dataset.letter);
@@ -308,10 +398,12 @@ function bindEvents() {
   });
   $("#programTopicFilter").addEventListener("change", renderProgramming);
   $("#bankSearch").addEventListener("input", renderBank);
+  $("#bankStatusFilter").addEventListener("change", renderBank);
 }
 
 function init() {
   renderStats();
+  renderProgress();
   renderReview();
   fillFilters();
   renderProgramming();
