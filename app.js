@@ -78,6 +78,160 @@ const KNOWLEDGE = {
   },
 };
 
+const GESP_LESSONS = [
+  {
+    title: "高精度",
+    level: "五级重点",
+    when: "题目里的整数可能很大，超过 long long，或要求用数组/字符串模拟大整数加减乘除。",
+    points: [
+      "用字符串读入大整数，按位转成数字处理。",
+      "加法从低位到高位，维护 carry；减法维护 borrow 并去掉前导零。",
+      "乘法先掌握大整数 × 一位数、再到大整数 × 大整数。",
+      "除法先掌握大整数 ÷ int，逐位试商并维护余数。",
+    ],
+    code: "string add(string a, string b) {\n    string ans;\n    int i = a.size() - 1, j = b.size() - 1, carry = 0;\n    while (i >= 0 || j >= 0 || carry) {\n        int x = i >= 0 ? a[i--] - '0' : 0;\n        int y = j >= 0 ? b[j--] - '0' : 0;\n        int sum = x + y + carry;\n        ans.push_back(char('0' + sum % 10));\n        carry = sum / 10;\n    }\n    reverse(ans.begin(), ans.end());\n    return ans;\n}",
+    practice: "对应 GESP 题型：高精度整数相加、进位/借位填空、数组模拟大整数。",
+    links: [
+      { label: "OI Wiki：高精度计算", url: "https://oi-wiki.org/math/bignum/" },
+      { label: "洛谷题单：高精度", url: "https://www.luogu.com.cn/training/102" },
+    ],
+  },
+  {
+    title: "二分与查找",
+    level: "五级重点",
+    when: "有序序列中找数，或答案具有单调性：某个答案可行，更大的/更小的也可行。",
+    points: [
+      "二分查找要求序列有序，每次用 mid 缩小一半范围。",
+      "二分答案不是找数组元素，而是在答案范围里找最小可行值或最大可行值。",
+      "关键是写出 check(mid)，判断 mid 是否满足条件。",
+      "注意 left、right、mid 更新，避免死循环。",
+    ],
+    code: "int binarySearch(vector<int>& a, int target) {\n    int l = 0, r = (int)a.size() - 1;\n    while (l <= r) {\n        int mid = l + (r - l) / 2;\n        if (a[mid] == target) return mid;\n        if (a[mid] < target) l = mid + 1;\n        else r = mid - 1;\n    }\n    return -1;\n}",
+    practice: "对应 GESP 题型：二分查找循环次数、查找失败时 left/right 变化、二分答案入门。",
+    links: [
+      { label: "OI Wiki：二分", url: "https://oi-wiki.org/basic/binary/" },
+      { label: "C语言中文网：二分查找算法", url: "https://c.biancheng.net/algorithm/binary-search.html" },
+    ],
+  },
+  {
+    title: "链表",
+    level: "五级高频",
+    when: "题目出现结点、next、prev、头结点、哑结点、循环链表、插入删除。",
+    points: [
+      "单链表只有 next，双链表有 prev 和 next。",
+      "删除结点前先保存要删除的指针，再改链接，最后 delete。",
+      "哑结点可以统一处理删除头结点和中间结点。",
+      "循环链表遍历要小心停止条件，常见是回到 head。",
+    ],
+    code: "Node dummy(0);\ndummy.next = head;\nNode* cur = &dummy;\nwhile (cur->next) {\n    if (cur->next->val == x) {\n        Node* del = cur->next;\n        cur->next = del->next;\n        delete del;\n    } else {\n        cur = cur->next;\n    }\n}\nhead = dummy.next;",
+    practice: "对应 GESP 题型：链表插入删除填空、双链表 prev/next 指针顺序、循环链表遍历。",
+    links: [
+      { label: "OI Wiki：链表", url: "https://oi-wiki.org/ds/linked-list/" },
+      { label: "C语言中文网：C++ 链表", url: "https://c.biancheng.net/view/337.html" },
+    ],
+  },
+  {
+    title: "欧几里得算法与最小公倍数",
+    level: "五级重点",
+    when: "题目问最大公约数、最小公倍数、公共周期、最大正方形边长。",
+    points: [
+      "gcd(a,b)=gcd(b,a%b)，直到 b 为 0。",
+      "循环写法更省栈空间，递归写法更短。",
+      "lcm(a,b)=a/gcd(a,b)*b，先除再乘可减少溢出。",
+      "手算调用序列是选择题常考点。",
+    ],
+    code: "int gcd(int a, int b) {\n    while (b != 0) {\n        int t = a % b;\n        a = b;\n        b = t;\n    }\n    return a;\n}\n\nlong long lcm(long long a, long long b) {\n    return a / gcd(a, b) * b;\n}",
+    practice: "对应 GESP 题型：gcd 调用顺序、辗转相除法、公共周期问题。",
+    links: [
+      { label: "OI Wiki：最大公约数", url: "https://oi-wiki.org/math/number-theory/gcd/" },
+    ],
+  },
+  {
+    title: "质数、埃氏筛与线性筛",
+    level: "五级重点",
+    when: "题目要求判断质数、生成素数表、比较埃氏筛和线性筛。",
+    points: [
+      "单个数判质数只需要试除到 sqrt(n)。",
+      "埃氏筛从 i*i 开始筛，因为更小倍数已被更小质因子筛过。",
+      "线性筛每个合数只被最小质因子筛一次。",
+      "线性筛里 if (i % primes[j] == 0) break 很关键。",
+    ],
+    code: "vector<int> primes;\nvector<bool> isComposite(n + 1, false);\nfor (int i = 2; i <= n; i++) {\n    if (!isComposite[i]) primes.push_back(i);\n    for (int j = 0; j < primes.size() && i * primes[j] <= n; j++) {\n        isComposite[i * primes[j]] = true;\n        if (i % primes[j] == 0) break;\n    }\n}",
+    practice: "对应 GESP 题型：埃氏筛内层循环、线性筛横线填空、质数判断复杂度。",
+    links: [
+      { label: "OI Wiki：筛法", url: "https://oi-wiki.org/math/number-theory/sieve/" },
+      { label: "OI Wiki：素数", url: "https://oi-wiki.org/math/number-theory/prime/" },
+    ],
+  },
+  {
+    title: "质因数分解与唯一分解定理",
+    level: "五级重点",
+    when: "题目要求把整数拆成质因数，或判断唯一分解定理的含义。",
+    points: [
+      "唯一分解定理：大于 1 的整数能唯一分解成若干质数乘积。",
+      "先处理因子 2，再枚举奇数因子。",
+      "循环到 i*i <= n 即可。",
+      "最后如果 n > 1，说明剩下的 n 是一个质因子。",
+    ],
+    code: "vector<int> factor(int n) {\n    vector<int> ans;\n    for (int i = 2; i * i <= n; i++) {\n        while (n % i == 0) {\n            ans.push_back(i);\n            n /= i;\n        }\n    }\n    if (n > 1) ans.push_back(n);\n    return ans;\n}",
+    practice: "对应 GESP 题型：质因数枚举边界、唯一分解定理判断。",
+    links: [
+      { label: "OI Wiki：唯一分解定理", url: "https://oi-wiki.org/math/number-theory/unique-factorization-theorem/" },
+      { label: "OI Wiki：质因数分解", url: "https://oi-wiki.org/math/number-theory/pollard-rho/" },
+    ],
+  },
+  {
+    title: "递归、迭代与递推",
+    level: "五级高频",
+    when: "题目让比较递归和循环，或阅读阶乘、斐波那契、求和代码。",
+    points: [
+      "递归要有边界条件，否则会无限调用。",
+      "递归会占用调用栈；迭代通常更省空间。",
+      "朴素递归斐波那契会重复计算，复杂度很高。",
+      "递推是用前面的结果推出后面的结果。",
+    ],
+    code: "int fibIter(int n) {\n    if (n <= 1) return n;\n    int a = 0, b = 1;\n    for (int i = 2; i <= n; i++) {\n        int c = a + b;\n        a = b;\n        b = c;\n    }\n    return b;\n}",
+    practice: "对应 GESP 题型：阶乘填空、斐波那契复杂度、递归调用序列。",
+    links: [
+      { label: "OI Wiki：递归", url: "https://oi-wiki.org/basic/recursion/" },
+      { label: "OI Wiki：递推", url: "https://oi-wiki.org/basic/recursion/#%E9%80%92%E6%8E%A8" },
+    ],
+  },
+  {
+    title: "贪心",
+    level: "五级常考",
+    when: "题目强调每一步选当前最优，比如找零、排序后选择、局部最优策略。",
+    points: [
+      "贪心不是试所有情况，而是每一步做当前最优选择。",
+      "能用贪心必须有理由：局部最优能推出全局最优。",
+      "选择题常问“核心思想是什么”。",
+      "做编程题时先想清楚排序规则或选择规则。",
+    ],
+    code: "vector<int> coins = {100, 50, 20, 10, 5, 2, 1};\nint money;\ncin >> money;\nfor (int c : coins) {\n    int cnt = money / c;\n    money %= c;\n    cout << c << \"元: \" << cnt << endl;\n}",
+    practice: "对应 GESP 题型：硬币找零、局部最优概念、贪心与枚举区分。",
+    links: [
+      { label: "OI Wiki：贪心", url: "https://oi-wiki.org/basic/greedy/" },
+    ],
+  },
+  {
+    title: "分治与排序",
+    level: "五级补强",
+    when: "题目出现把问题拆成左右两半、归并排序、快速排序、递归排序。",
+    points: [
+      "分治三步：分解、解决子问题、合并结果。",
+      "二分查找、归并排序、快速排序都体现分治思想。",
+      "归并排序通常稳定，快速排序通常不稳定。",
+      "快排平均复杂度高效，但最坏情况可能退化。",
+    ],
+    code: "void quickSort(vector<int>& a, int l, int r) {\n    if (l >= r) return;\n    int i = l, j = r, pivot = a[(l + r) / 2];\n    while (i <= j) {\n        while (a[i] < pivot) i++;\n        while (a[j] > pivot) j--;\n        if (i <= j) swap(a[i++], a[j--]);\n    }\n    quickSort(a, l, j);\n    quickSort(a, i, r);\n}",
+    practice: "对应 GESP 题型：哪些算法体现分治、排序稳定性、复杂度判断。",
+    links: [
+      { label: "OI Wiki：分治", url: "https://oi-wiki.org/basic/divide-and-conquer/" },
+      { label: "OI Wiki：排序简介", url: "https://oi-wiki.org/basic/sort-intro/" },
+    ],
+  },
+];
+
 let quiz = [];
 let current = 0;
 const STORAGE_KEY = "gespAnswers";
@@ -191,6 +345,27 @@ function renderReview() {
       `;
     })
     .join("");
+  $("#gespLessonList").innerHTML = GESP_LESSONS.map(renderLessonCard).join("");
+}
+
+function renderLessonCard(lesson) {
+  return `
+    <details class="lesson-card">
+      <summary>
+        <span>${escapeHtml(lesson.title)}</span>
+        <em>${escapeHtml(lesson.level)}</em>
+      </summary>
+      <div class="lesson-body">
+        <p class="lesson-when"><strong>什么时候用：</strong>${escapeHtml(lesson.when)}</p>
+        <ul>${lesson.points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
+        <pre class="code-block">${escapeHtml(lesson.code)}</pre>
+        <p><strong>练习方向：</strong>${escapeHtml(lesson.practice)}</p>
+        <div class="resource-links">
+          ${lesson.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}</a>`).join("")}
+        </div>
+      </div>
+    </details>
+  `;
 }
 
 function fillFilters() {
@@ -375,23 +550,7 @@ function renderInfo() {
 
   $("#infoLessonList").innerHTML = (INFO.lessons || [])
     .map(
-      (lesson) => `
-        <details class="lesson-card">
-          <summary>
-            <span>${escapeHtml(lesson.title)}</span>
-            <em>${escapeHtml(lesson.level)}</em>
-          </summary>
-          <div class="lesson-body">
-            <p class="lesson-when"><strong>什么时候用：</strong>${escapeHtml(lesson.when)}</p>
-            <ul>${lesson.points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
-            <pre class="code-block">${escapeHtml(lesson.code)}</pre>
-            <p><strong>练习方向：</strong>${escapeHtml(lesson.practice)}</p>
-            <div class="resource-links">
-              ${lesson.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}</a>`).join("")}
-            </div>
-          </div>
-        </details>
-      `
+      (lesson) => renderLessonCard(lesson)
     )
     .join("");
 
