@@ -90,6 +90,114 @@ window.INFO_DATA = {
       ]
     }
   ],
+  "lessons": [
+    {
+      "title": "关联容器 set/map/pair",
+      "level": "复赛必补",
+      "when": "题目出现“按名称查询、按类别汇总、去重、排名时绑定两个字段”时优先考虑。",
+      "points": [
+        "set：自动去重并保持有序，常用于去重、判断是否出现过。",
+        "map：键值对，适合“名字 -> 分数”“类别 -> 总金额”“班级 -> 奖牌数”。",
+        "pair：把两个值绑在一起，常和 vector、sort、map 搭配。"
+      ],
+      "code": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    map<string, int> score;\n    score[\"一班\"] += 5;\n    score[\"一班\"] += 2;\n\n    set<string> names;\n    names.insert(\"张三\");\n    names.insert(\"张三\"); // 不会重复\n\n    vector<pair<int, string>> rankList;\n    rankList.push_back({95, \"李雷\"});\n    sort(rankList.begin(), rankList.end(), greater<pair<int, string>>());\n}",
+      "practice": "对应模拟题：植树统计、奖牌统计、财务分类汇总、作品/实验查询、排行榜。",
+      "links": [
+        {
+          "label": "OI Wiki：关联式容器",
+          "url": "https://oi-wiki.org/lang/csl/associative-container/"
+        },
+        {
+          "label": "OI Wiki：pair",
+          "url": "https://oi-wiki.org/lang/csl/pair/"
+        },
+        {
+          "label": "C语言中文网：map 容器入门",
+          "url": "https://c.biancheng.net/view/7173.html"
+        }
+      ]
+    },
+    {
+      "title": "栈 stack 与队列 queue",
+      "level": "复赛补强",
+      "when": "题目有“先进先出、排队、逐层扩展、最近加入先处理、撤销/回退”时考虑。",
+      "points": [
+        "queue：先进先出，BFS 最短路的核心工具。",
+        "stack：后进先出，适合括号匹配、撤销、路径回退。",
+        "它们是容器适配器，常用 push、pop、front/top、empty。"
+      ],
+      "code": "#include <bits/stdc++.h>\nusing namespace std;\n\nqueue<int> q;\nq.push(1);\nq.push(2);\nwhile (!q.empty()) {\n    int x = q.front();\n    q.pop();\n}\n\nstack<int> st;\nst.push(10);\nint topValue = st.top();\nst.pop();",
+      "practice": "对应模拟题：迷宫最短路径、队列类任务、逐层搜索类任务。",
+      "links": [
+        {
+          "label": "OI Wiki：容器适配器 stack/queue",
+          "url": "https://oi-wiki.org/lang/csl/container-adapter/"
+        }
+      ]
+    },
+    {
+      "title": "BFS / DFS 搜索",
+      "level": "复赛重点",
+      "when": "题目出现迷宫、方格、路径、最短步数、连通块、能否到达。",
+      "points": [
+        "BFS：一层一层扩展，最适合无权图/方格图最短路。",
+        "DFS：一路走到底再回退，适合枚举方案、连通块、递归搜索。",
+        "方格题固定套路：方向数组 + visited + 边界判断。"
+      ],
+      "code": "int dx[4] = {1, -1, 0, 0};\nint dy[4] = {0, 0, 1, -1};\nqueue<pair<int,int>> q;\nq.push({0, 0});\nvis[0][0] = true;\nwhile (!q.empty()) {\n    auto [x, y] = q.front();\n    q.pop();\n    for (int k = 0; k < 4; k++) {\n        int nx = x + dx[k], ny = y + dy[k];\n        if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;\n        if (vis[nx][ny] || grid[nx][ny] == '#') continue;\n        vis[nx][ny] = true;\n        dist[nx][ny] = dist[x][y] + 1;\n        q.push({nx, ny});\n    }\n}",
+      "practice": "对应模拟题：魔法森林的迷宫。",
+      "links": [
+        {
+          "label": "OI Wiki：BFS（搜索）",
+          "url": "https://oi-wiki.org/search/bfs/"
+        },
+        {
+          "label": "OI Wiki：DFS（搜索）",
+          "url": "https://oi-wiki.org/search/dfs/"
+        }
+      ]
+    },
+    {
+      "title": "前缀和",
+      "level": "复赛补强",
+      "when": "题目要多次求连续区间和、统计一段时间/一段编号的累计值。",
+      "points": [
+        "先预处理 prefix[i] = 前 i 个数的和。",
+        "区间 [l, r] 的和：prefix[r] - prefix[l - 1]。",
+        "能把多次区间求和从每次 O(n) 降到每次 O(1)。"
+      ],
+      "code": "vector<int> a(n + 1), pre(n + 1, 0);\nfor (int i = 1; i <= n; i++) {\n    cin >> a[i];\n    pre[i] = pre[i - 1] + a[i];\n}\nint l, r;\ncin >> l >> r;\ncout << pre[r] - pre[l - 1] << endl;",
+      "practice": "适合补在后两道较难题：连续区间统计、累计查询、时间段统计。",
+      "links": [
+        {
+          "label": "OI Wiki：前缀和 & 差分",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
+    },
+    {
+      "title": "排序与结构化记录",
+      "level": "复赛高频",
+      "when": "题目出现排行榜、按频率/得分/时间排序、输出前 R 名。",
+      "points": [
+        "简单二元记录用 pair，字段多时用 struct 更清楚。",
+        "sort 默认升序；降序可以写比较函数。",
+        "排序前先确认同分、同频率时是否有次级规则。"
+      ],
+      "code": "struct Student {\n    string name;\n    int score;\n};\n\nvector<Student> a;\nsort(a.begin(), a.end(), [](const Student& x, const Student& y) {\n    if (x.score != y.score) return x.score > y.score;\n    return x.name < y.name;\n});",
+      "practice": "对应模拟题：数学竞赛排名、图书借阅排行榜、购物清单按频率排序。",
+      "links": [
+        {
+          "label": "OI Wiki：序列式容器 vector",
+          "url": "https://oi-wiki.org/lang/csl/sequence-container/"
+        },
+        {
+          "label": "OI Wiki：pair",
+          "url": "https://oi-wiki.org/lang/csl/pair/"
+        }
+      ]
+    }
+  ],
   "objectiveQuestions": [
     {
       "id": "INFO-O1",

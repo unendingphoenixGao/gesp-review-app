@@ -373,6 +373,28 @@ function renderInfo() {
     )
     .join("");
 
+  $("#infoLessonList").innerHTML = (INFO.lessons || [])
+    .map(
+      (lesson) => `
+        <details class="lesson-card">
+          <summary>
+            <span>${escapeHtml(lesson.title)}</span>
+            <em>${escapeHtml(lesson.level)}</em>
+          </summary>
+          <div class="lesson-body">
+            <p class="lesson-when"><strong>什么时候用：</strong>${escapeHtml(lesson.when)}</p>
+            <ul>${lesson.points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
+            <pre class="code-block">${escapeHtml(lesson.code)}</pre>
+            <p><strong>练习方向：</strong>${escapeHtml(lesson.practice)}</p>
+            <div class="resource-links">
+              ${lesson.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}</a>`).join("")}
+            </div>
+          </div>
+        </details>
+      `
+    )
+    .join("");
+
   $("#infoObjectiveList").innerHTML = (INFO.objectiveQuestions || [])
     .map((q) => {
       const type = q.type === "multi" ? "多选" : "单选";

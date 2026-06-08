@@ -438,13 +438,15 @@ pre {
 }
 
 .program-list,
-.bank-list {
+.bank-list,
+.lesson-list {
   display: grid;
   gap: 12px;
 }
 
 .program-card,
-.bank-card {
+.bank-card,
+.lesson-card {
   padding: 16px;
 }
 
@@ -456,6 +458,74 @@ pre {
 .program-card summary {
   cursor: pointer;
   font-weight: 800;
+}
+
+.lesson-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.lesson-card summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.lesson-card summary em {
+  border-radius: 999px;
+  background: #fff6e8;
+  padding: 5px 9px;
+  color: var(--amber);
+  font-style: normal;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.lesson-body {
+  margin-top: 14px;
+}
+
+.lesson-body ul {
+  margin-top: 8px;
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.lesson-when {
+  margin-bottom: 8px;
+}
+
+.code-block {
+  max-height: none;
+  background: #f5f7f9;
+  color: #1d2a32;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
+.resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.resource-links a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.resource-links a:hover {
+  border-color: var(--blue);
+  background: #eef5fb;
 }
 
 .program-card .steps {
