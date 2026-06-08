@@ -1,4 +1,5 @@
 const DATA = window.GESP_DATA || { questions: [], programs: [], exams: [] };
+const INFO = window.INFO_DATA || { meta: {}, gespComparison: [], extraTopics: [], objectiveQuestions: [], programs: [] };
 
 const OFFICIAL_TOPICS = [
   "初等数论",
@@ -80,7 +81,9 @@ const KNOWLEDGE = {
 let quiz = [];
 let current = 0;
 const STORAGE_KEY = "gespAnswers";
+const INFO_STORAGE_KEY = "infoProgramRecords";
 let answers = loadAnswers();
+let infoRecords = loadInfoRecords();
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -109,6 +112,18 @@ function saveAnswers() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
 }
 
+function loadInfoRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(INFO_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveInfoRecords() {
+  localStorage.setItem(INFO_STORAGE_KEY, JSON.stringify(infoRecords));
+}
+
 function recordFor(questionId) {
   const record = answers[questionId];
   if (!record) return null;
@@ -131,6 +146,11 @@ function progressSummary() {
   return { practiced, currentWrong, everWrong, correct, remaining, accuracy };
 }
 
+function infoSummary() {
+  const done = INFO.programs.filter((p) => infoRecords[p.id]?.done).length;
+  return { done, total: INFO.programs.length, remaining: Math.max(0, INFO.programs.length - done) };
+}
+
 function setView(name) {
   $$(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.view === name));
   $$(".view").forEach((view) => view.classList.toggle("active", view.id === name));
@@ -141,6 +161,7 @@ function renderStats() {
   $("#statQuestions").textContent = `${DATA.questions.length} 道选择题`;
   $("#statPracticed").textContent = `已练 ${progress.practiced} 道`;
   $("#statWrong").textContent = `错题 ${progress.currentWrong} 道`;
+  $("#statInfo").textContent = `信息素养 ${infoSummary().total} 题`;
 }
 
 function renderProgress() {
@@ -177,6 +198,8 @@ function fillFilters() {
   $("#topicFilter").innerHTML = topics.map((t) => `<option>${t}</option>`).join("");
   $("#programTopicFilter").innerHTML = topics.map((t) => `<option>${t}</option>`).join("");
   $("#examFilter").innerHTML = ["全部试卷", ...DATA.exams.map((e) => e.name)].map((e) => `<option>${e}</option>`).join("");
+  const infoTopics = ["全部知识点", ...unique(INFO.programs.flatMap((p) => p.topics))];
+  $("#infoTopicFilter").innerHTML = infoTopics.map((t) => `<option>${t}</option>`).join("");
 }
 
 function filteredQuestions() {
@@ -322,6 +345,105 @@ function renderProgramming() {
       .join("") || `<div class="empty">这个知识点暂时没有编程题。</div>`;
 }
 
+function renderInfo() {
+  const summary = infoSummary();
+  $("#infoTitle").textContent = INFO.meta.name || "全国青少年信息素养大赛智能算法挑战赛复赛";
+  $("#infoFormat").innerHTML = (INFO.meta.format || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  $("#infoProgress").textContent = `${summary.done} / ${summary.total}`;
+
+  $("#infoComparison").innerHTML = (INFO.gespComparison || [])
+    .map(
+      (group) => `
+        <article class="topic-card">
+          <h3>${escapeHtml(group.area)}</h3>
+          <ul>${group.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </article>
+      `
+    )
+    .join("");
+
+  $("#infoTopicGrid").innerHTML = (INFO.extraTopics || [])
+    .map(
+      (topic) => `
+        <article class="topic-card">
+          <h3>${escapeHtml(topic.title)}</h3>
+          <ul>${topic.points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
+        </article>
+      `
+    )
+    .join("");
+
+  $("#infoObjectiveList").innerHTML = (INFO.objectiveQuestions || [])
+    .map((q) => {
+      const type = q.type === "multi" ? "多选" : "单选";
+      const answer = Array.isArray(q.answer) ? q.answer.join("、") : q.answer;
+      return `
+        <details class="bank-card">
+          <summary>${type} · ${escapeHtml(q.topic)} · ${escapeHtml(q.question)}</summary>
+          <div class="options compact-options">
+            ${Object.entries(q.options)
+              .map(([letter, text]) => `<div class="option readonly"><span class="letter">${letter}</span><span>${escapeHtml(text)}</span></div>`)
+              .join("")}
+          </div>
+          <p class="answer">答案：${escapeHtml(answer)}</p>
+        </details>
+      `;
+    })
+    .join("");
+  renderInfoPrograms();
+}
+
+function renderInfoPrograms() {
+  const topic = $("#infoTopicFilter").value || "全部知识点";
+  const status = $("#infoStatusFilter").value || "all";
+  const list = INFO.programs.filter((p) => {
+    const done = Boolean(infoRecords[p.id]?.done);
+    const topicOk = topic === "全部知识点" || p.topics.includes(topic);
+    const statusOk = status === "all" || (status === "done" && done) || (status === "undone" && !done);
+    return topicOk && statusOk;
+  });
+
+  $("#infoProgramList").innerHTML =
+    list
+      .map((p) => {
+        const done = Boolean(infoRecords[p.id]?.done);
+        return `
+          <details class="program-card info-program ${done ? "done" : ""}">
+            <summary>${done ? "已完成" : "未练习"} · ${p.exam} 第 ${p.number} 题 · ${escapeHtml(p.title)}</summary>
+            <div class="question-meta">
+              <span class="${done ? "status-normal" : "status-review"}">${done ? "已完成" : "未练习"}</span>
+              ${p.topics.map((t) => `<span>${escapeHtml(t)}</span>`).join("")}
+            </div>
+            <div class="steps">
+              <div class="step"><strong>建模</strong><br>${infoAdvice(p, 0)}</div>
+              <div class="step"><strong>数据结构</strong><br>${infoAdvice(p, 1)}</div>
+              <div class="step"><strong>测试</strong><br>样例之外，再补空值、边界、重复数据或最大数据。</div>
+            </div>
+            <pre>${escapeHtml(p.content)}</pre>
+            <div class="actions">
+              <button class="mark-info" data-info-id="${p.id}" data-done="${done ? "0" : "1"}">${done ? "标记未完成" : "标记已完成"}</button>
+            </div>
+          </details>
+        `;
+      })
+      .join("") || `<div class="empty">没有符合条件的信息素养复赛题。</div>`;
+}
+
+function infoAdvice(program, index) {
+  const topics = program.topics.join(" ");
+  if (index === 0) {
+    if (topics.includes("搜索与图")) return "把格子、位置、步数抽象成状态，先判断是否需要 BFS。";
+    if (topics.includes("字典与映射")) return "先列出每条记录的字段，再确定按哪个字段查询或汇总。";
+    if (topics.includes("排序与排名")) return "明确排序键：分数、次数、频率、字典序，注意同分规则。";
+    return "把故事背景翻译成输入、处理、输出三部分。";
+  }
+  if (topics.includes("搜索与图")) return "queue + visited + 方向数组通常是最短路题的骨架。";
+  if (topics.includes("字典与映射")) return "优先考虑 map<string, ...> 或 vector<pair<...>>。";
+  if (topics.includes("排序与排名")) return "使用 vector 存记录，再用 sort 写比较规则。";
+  if (topics.includes("数学与枚举")) return "先写朴素枚举，确认复杂度能通过再优化。";
+  return "先用变量或结构体保存数据，再按题意模拟。";
+}
+
 function renderBank() {
   const key = $("#bankSearch").value.trim().toLowerCase();
   const status = $("#bankStatusFilter").value;
@@ -399,6 +521,27 @@ function bindEvents() {
   $("#programTopicFilter").addEventListener("change", renderProgramming);
   $("#bankSearch").addEventListener("input", renderBank);
   $("#bankStatusFilter").addEventListener("change", renderBank);
+  $("#infoTopicFilter").addEventListener("change", renderInfoPrograms);
+  $("#infoStatusFilter").addEventListener("change", renderInfoPrograms);
+  $("#infoShowUndone").addEventListener("click", () => {
+    $("#infoStatusFilter").value = "undone";
+    renderInfoPrograms();
+  });
+  $("#infoShowAll").addEventListener("click", () => {
+    $("#infoStatusFilter").value = "all";
+    renderInfoPrograms();
+  });
+  $("#infoProgramList").addEventListener("click", (event) => {
+    const button = event.target.closest(".mark-info");
+    if (!button) return;
+    infoRecords[button.dataset.infoId] = {
+      done: button.dataset.done === "1",
+      updatedAt: new Date().toISOString(),
+    };
+    saveInfoRecords();
+    renderStats();
+    renderInfo();
+  });
 }
 
 function init() {
@@ -406,6 +549,7 @@ function init() {
   renderProgress();
   renderReview();
   fillFilters();
+  renderInfo();
   renderProgramming();
   renderBank();
   bindEvents();

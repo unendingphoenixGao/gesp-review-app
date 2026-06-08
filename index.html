@@ -16,12 +16,14 @@
         <span id="statQuestions">0 道选择题</span>
         <span id="statPracticed">已练 0 道</span>
         <span id="statWrong">错题 0 道</span>
+        <span id="statInfo">信息素养 0 题</span>
       </div>
     </header>
 
     <main>
       <nav class="tabs" aria-label="主功能">
         <button class="tab active" data-view="review">先复习</button>
+        <button class="tab" data-view="info">信息素养复赛</button>
         <button class="tab" data-view="quiz">再答题</button>
         <button class="tab" data-view="programming">编程题</button>
         <button class="tab" data-view="bank">题库</button>
@@ -57,6 +59,59 @@
           </div>
         </div>
         <div id="topicGrid" class="topic-grid"></div>
+      </section>
+
+      <section id="info" class="view">
+        <div class="section-head">
+          <div>
+            <h2>信息素养大赛 C++ 复赛专用</h2>
+            <p>用于 2026 年 7 月复赛备赛：保留 GESP 五级基础，同时补强场景化算法应用。</p>
+          </div>
+          <div class="head-actions">
+            <button id="infoShowUndone" class="primary">继续未练编程题</button>
+            <button id="infoShowAll">查看全部</button>
+          </div>
+        </div>
+
+        <div class="info-hero">
+          <div>
+            <p class="eyebrow">比赛形式</p>
+            <h3 id="infoTitle">全国青少年信息素养大赛智能算法挑战赛复赛</h3>
+            <ul id="infoFormat"></ul>
+          </div>
+          <div class="progress-card">
+            <span>复赛编程题进度</span>
+            <strong id="infoProgress">0 / 0</strong>
+          </div>
+        </div>
+
+        <div class="info-grid" id="infoComparison"></div>
+        <h2>额外补强知识点</h2>
+        <div class="topic-grid" id="infoTopicGrid"></div>
+
+        <div class="section-head compact">
+          <div>
+            <h2>客观题热身</h2>
+            <p>按图片里的复赛形式补充：单选和多选都要练。</p>
+          </div>
+        </div>
+        <div class="bank-list" id="infoObjectiveList"></div>
+
+        <div class="section-head compact">
+          <div>
+            <h2>复赛编程题</h2>
+            <p>题源为本地 6 套模拟卷，每套 4 道。建议按 120 分钟限时训练。</p>
+          </div>
+          <div class="head-actions">
+            <select id="infoTopicFilter"></select>
+            <select id="infoStatusFilter">
+              <option value="all">全部状态</option>
+              <option value="undone">未练习</option>
+              <option value="done">已完成</option>
+            </select>
+          </div>
+        </div>
+        <div id="infoProgramList" class="program-list"></div>
       </section>
 
       <section id="quiz" class="view">
@@ -146,6 +201,7 @@
     </main>
 
     <script src="data.js"></script>
+    <script src="info_data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -210,11 +210,35 @@ button:hover,
 .panel,
 .question-panel,
 .program-card,
-.bank-card {
+.bank-card,
+.info-hero {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow);
+}
+
+.info-hero {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 16px;
+  padding: 18px;
+  border-left: 5px solid var(--blue);
+}
+
+.info-hero ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .topic-card {
@@ -424,6 +448,11 @@ pre {
   padding: 16px;
 }
 
+.bank-card summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .program-card summary {
   cursor: pointer;
   font-weight: 800;
@@ -441,6 +470,22 @@ pre {
   border-radius: 8px;
   padding: 10px;
   background: #fbfcfa;
+}
+
+.compact {
+  margin-top: 22px;
+}
+
+.compact-options {
+  margin-bottom: 8px;
+}
+
+.readonly {
+  cursor: default;
+}
+
+.info-program.done {
+  border-color: #a8d0c0;
 }
 
 .bank-card h3 {
@@ -465,7 +510,9 @@ pre {
 
   .quiz-layout,
   .program-card .steps,
-  .progress-grid {
+  .progress-grid,
+  .info-grid,
+  .info-hero {
     grid-template-columns: 1fr;
   }
 }
